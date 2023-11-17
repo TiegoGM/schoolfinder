@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Login</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h4>Admin Login</h4>
+          </div>
+          <div class="card-body">
+            <form id="admin-login">
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="Enter email">
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Enter password">
+              </div>
+              <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+  <!-- Custom JS -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtmGF4ZAIjlD4TGnUgyt8rOSQcjFVMFpI",
+      authDomain: "schoolfinders-2f285.firebaseapp.com",
+      projectId: "schoolfinders-2f285",
+      storageBucket: "schoolfinders-2f285.appspot.com",
+      messagingSenderId: "522336434901",
+      appId: "1:522336434901:web:1c8218b3217414671c405c"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const adminLogin = document.querySelector('#admin-login');
+
+    adminLogin.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = adminLogin['email'].value;
+      const password = adminLogin['password'].value;
+
+      try {
+    
+        const adminRef = await db.collection('admins').where('email', '==', email).where('password', '==', password).get();
+        const admin = adminRef
+
+        if (admin) {
+          window.location.href = '/Admin/dashboard.html';
+        } else {
+          alert('You are not an admin!');
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+    </script>
+  <!-- Bootstrap JS -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Apply - School Finders</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f8f9fa;
+    }
+
+    .navbar {
+      background-color: #343a40;
+    }
+
+    .navbar-brand {
+      font-size: 1.5rem;
+    }
+
+    .navbar-toggler-icon {
+      background-color: #fff;
+    }
+
+    .navbar-nav .nav-link {
+      color: #fff;
+    }
+
+    .navbar-nav .nav-link:hover {
+      color: #17a2b8;
+    }
+
+    .container {
+      margin-top: 20px;
+    }
+
+    h1 {
+      color: #007bff;
+    }
+
+    form {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+      background-color: #0056b3;
+      border-color: #0056b3;
+    }
+
+    .form-control-file {
+      margin-top: 10px;
+    }
+
+    #logout {
+      color: #dc3545;
+    }
+
+    #logout:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <a class="navbar-brand" href="/Students/dashboard.html">School Finders</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item active">
+          <a class="nav-link" href="/Students/apply.html">Apply</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/Students/status.html">Status</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/Students/profile.html">Profile</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" id="logout">Logout</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <div class="container my-5">
+    <h1 class="text-center mb-4">Apply Now</h1>
+    <form id="apply-form">
+      <div class="form-group">
+        <label for="schoolSelect">Select School:</label>
+        <select class="form-control" id="schoolSelect">
+          <option>IIE Rosebank College</option>
+          <option>Northern Technical College</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="courseSelect">Select Course:</label>
+        <select class="form-control" id="courseSelect">
+          <option>Business Management</option>
+          <option>Marketing Management</option>
+          <option>Human Resource Management</option>
+          <option>Financial Management</option>
+          <option>Information Technology</option>
+          <option>Software Development</option>
+          <option>Higher Certificate in Early Childhood Development</option>
+          <option>Diploma in Grade R Teaching</option>
+          <option>Graphic Design</option>
+          <option>National Diploma in Technical Financial Accounting</option>
+          <option>Journalism</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    <br>
+    <div class="form-group">
+      <label for="idUpload">Upload ID (PDF or Image):</label>
+      <input type="file" class="form-control-file" id="idUpload">
+    </div>
+    <div class="form-group">
+      <label for="grade12Upload">Upload Grade 12 Results (PDF or Image):</label>
+      <input type="file" class="form-control-file" id="grade12Upload">
+    </div>
+    <button type="button" class="btn btn-primary" id="uploadBtn">Upload</button>
+  </div>
+
+  <!--firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+  <!-- Custom JS -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDtmGF4ZAIjlD4TGnUgyt8rOSQcjFVMFpI",
+      authDomain: "schoolfinders-2f285.firebaseapp.com",
+      projectId: "schoolfinders-2f285",
+      storageBucket: "schoolfinders-2f285.appspot.com",
+      messagingSenderId: "522336434901",
+      appId: "1:522336434901:web:1c8218b3217414671c405c"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    const applyForm = document.querySelector('#apply-form');
+    const idUpload = document.querySelector('#idUpload');
+    const grade12Upload = document.querySelector('#grade12Upload');
+    const uploadBtn = document.querySelector('#uploadBtn');
+
+    applyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const school = applyForm['schoolSelect'].value;
+      const course = applyForm['courseSelect'].value;
+
+      // Get the current user
+      const user = auth.currentUser;
+
+      if (user) {
+        try {
+          // Create a subcollection 'applications' under the user's document
+          const applicationRef = await db.collection('users').doc(user.uid).collection('university').add({
+            school: school,
+            course: course,
+            status: 'Pending',
+          });
+
+          alert("Application submitted successfully.");
+        } catch (error) {
+          alert(error.message);
+        }
+      } else {
+        // User is not signed in, handle accordingly
+        alert("User not signed in.");
+      }
+    });
+
+    uploadBtn.addEventListener('click', async () => {
+      const user = auth.currentUser;
+
+      if (user) {
+        try {
+          // Upload ID file
+          const idFile = idUpload.files[0];
+          const idStorageRef = storage.ref(`images/${user.uid}/id_image.jpg`);
+          await idStorageRef.put(idFile);
+
+          // Upload Grade 12 file
+          const grade12File = grade12Upload.files[0];
+          const grade12StorageRef = storage.ref(`images/${user.uid}/grade12_image.jpg`);
+          await grade12StorageRef.put(grade12File);
+
+           // Save file paths to Firestore
+          await db.collection('users').doc(user.uid).collection('matricresults').add({
+          idFilePath: idStorageRef.fullPath,
+          grade12FilePath: grade12StorageRef.fullPath,
+          });
+
+          alert("Files uploaded successfully.");
+        } catch (error) {
+          alert(error.message);
+        }
+      } else {
+        // User is not signed in, handle accordingly
+        alert("User not signed in.");
+      }
+    });
+
+    // Logout
+    const logout = document.querySelector('#logout');
+
+    logout.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      auth.signOut().then(() => {
+        alert("User signed out successfully.");
+        window.location.href = "/index.html";
+      }).catch((error) => {
+        alert(error.message);
+      });
+    });
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
